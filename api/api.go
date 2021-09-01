@@ -1,16 +1,16 @@
 package api
 
 import (
-	"database/sql"
+	"github.com/ilknarf/shaky-table/userdb"
 )
 
 // API contains relevant db connections for handlers, and contains the handlers as methods
 type API struct {
-	db *sql.DB
+	userDB *userdb.UserDB
 }
 
-func newAPI(db *sql.DB) *API {
+func newAPI(userDB *userdb.UserDB) *API {
 	return &API{
-		db: db,
+		userDB: userDB,
 	}
 }

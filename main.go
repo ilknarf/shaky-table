@@ -13,19 +13,19 @@ func main() {
 	log.Println("Starting...")
 
 	log.Println("Connecting to UserDB")
-	db, err := userdb.Open()
+	userDB, err := userdb.Open()
 
 	if err != nil {
-		log.Fatalln("Unable to connect to UserDB")
+		log.Fatalln(err)
 	}
-	defer db.Close()
+	defer userDB.Close()
 
 	log.Println("Initializing router")
 	baseRouter := mux.NewRouter()
 
 	// add apiRouter to baseRouter
 	log.Println("Adding API routes to router")
-	apiRouter := api.NewRouter(db)
+	apiRouter := api.NewRouter(userDB)
 	baseRouter.PathPrefix("/api").Name("api").Subrouter().Handle("/", apiRouter)
 
 	log.Println("Serving...")

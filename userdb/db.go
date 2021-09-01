@@ -8,20 +8,45 @@ import (
 	"github.com/pkg/errors"
 )
 
-func Open() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", "db/users.db")
+type UserDB struct {
+	db *sql.DB
+}
+
+func createUsersTable(db *sql.DB) error {
+	_, err := db.Exec(`
+		CREATE TABLE users (
+			id         INTEGER PRIMARY KEY AUTOINCREMENT,
+			username   VARCHAR(32) NOT NULL,
+			pw_hash    VARCHAR(64) NOT NULL,
+			created_at INTEGER NOT NULL,
+			last_login INTEGER NOT NULL
+		);
+	`)
+
+	return err
+}
+
+func Open() (*UserDB, error) {
+	db, err := sql.Open("sqlite3", "./db/users.db")
 	if err != nil {
-		return nil, errors.Wrap("Unable to connect to UserDB", err)
+		return nil, errors.Wrap(err, "Unable to connect to UserDB")
 	}
 
-	rows, err := db.Query("SELECT * FROM sqlite_master WHERE name='users' and type='table")
+	rows, err := db.Query("SELECT * FROM sqlite_master WHERE name='users' and type='table';")
 	if err != nil {
-		return nil, errors.Wrap("Unable to read sqlite_master from UserDB", err)
+		return nil, errors.Wrap(err, "Unable to read sqlite_master from UserDB")
 	}
 
 	if !rows.Next() {
 		log.Println("No users table found. Creating new users table.")
+		if err := createUsersTable(db); err != nil {
+			return nil, errors.Wrap(err, "Unable to create users table")
+		}
 	}
 
-	return db, nil
+	return &UserDB{db}, nil
+}
+
+func (userDB *UserDB) Close() {
+	userDB.db.Close()
 }

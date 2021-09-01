@@ -1,18 +1,26 @@
 package api
 
 import (
-	"database/sql"
+	"context"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/ilknarf/shaky-table/userdb"
 )
 
 type APIRouter struct {
-	*mux.Router
+	router *mux.Router
 }
 
-func NewRouter(db *sql.DB) http.Handler {
-	api := newAPI(db)
+func (r *APIRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	ctx, _ := context.WithTimeout(req.Context(), 500*time.Millisecond)
+	r.router.ServeHTTP(w, req.WithContext(ctx))
+}
+
+// NewRouter creates the API struct that contains all the handler methods
+func NewRouter(userDB *userdb.UserDB) http.Handler {
+	api := newAPI(userDB)
 
 	r := &APIRouter{mux.NewRouter()}
 	r.registerHandlers(api)
@@ -21,8 +29,8 @@ func NewRouter(db *sql.DB) http.Handler {
 }
 
 func (r *APIRouter) registerHandlers(api *API) {
-	post := r.Methods("POST")
-	// get := r.Methods("GET")
+	post := r.router.Methods("POST")
+	// get := r.router.Methods("GET")
 
 	post.HandlerFunc(api.CreateAccount)
 }
