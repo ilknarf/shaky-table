@@ -12,7 +12,16 @@ func (api *API) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := api.userDB.CreateUser("user", "pass"); err != nil {
+	username := r.Form.Get("user")
+	email := r.Form.Get("email")
+	password := r.Form.Get("password")
+
+	if username == "" || password == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if err := api.userDB.CreateUser(username, password, email); err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
