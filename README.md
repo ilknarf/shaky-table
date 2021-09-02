@@ -1,4 +1,4 @@
-# Shaky-Table (WIP)
+# Shaky Table (WIP)
 
 Ongoing attempt at trying to recreate elements of Airtable's spreadsheet-database hybrid concept.
 
