@@ -21,7 +21,7 @@ func (userDB *UserDB) CreateUser(ctx context.Context, username string, password 
 	pwHash, err := hashPassword(password)
 
 	if err != nil {
-		return errors.Wrap(err, "Unable to CreateUser due to failed password creation")
+		return errors.Wrap(err, "Unable to create user due to failed password creation")
 	}
 
 	emailString := sql.NullString{
@@ -34,7 +34,7 @@ func (userDB *UserDB) CreateUser(ctx context.Context, username string, password 
 	username = strings.ToLower(username)
 
 	if _, err := userDB.db.ExecContext(ctx, createUserQuery, username, displayName, emailString, pwHash); err != nil {
-		return errors.Wrap(err, fmt.Sprintf("Unable to CreateUser with user: %s", username))
+		return errors.Wrap(err, fmt.Sprintf("Unable to create user with user: %s", username))
 	}
 
 	return nil
@@ -51,6 +51,7 @@ func (userDB *UserDB) GetUserByUsername(ctx context.Context, username string) (*
 }
 
 func (userDB *UserDB) UserExists(ctx context.Context, username string) bool {
+	username = strings.ToLower(username)
 	_, err := userDB.GetUserByUsername(ctx, username)
 	return err != nil
 }

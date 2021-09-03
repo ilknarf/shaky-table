@@ -22,6 +22,11 @@ func (api *API) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if api.userDB.UserExists(ctx, username) {
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+
 	if err := api.userDB.CreateUser(ctx, username, password, email); err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
