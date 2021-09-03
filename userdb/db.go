@@ -13,16 +13,7 @@ type UserDB struct {
 }
 
 func createUsersTable(db *sql.DB) error {
-	_, err := db.Exec(`
-		CREATE TABLE users (
-			id         INTEGER PRIMARY KEY AUTOINCREMENT,
-			username   VARCHAR(32) UNIQUE NOT NULL,
-			email      VARCHAR(255),
-			pw_hash    VARCHAR(64) NOT NULL,
-			created_at INTEGER NOT NULL,
-			last_login INTEGER NOT NULL
-		);
-	`)
+	_, err := db.Exec(createUsersTableQuery)
 
 	return err
 }
