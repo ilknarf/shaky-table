@@ -1,6 +1,9 @@
 package userdb
 
 const (
+	getUserTableQuery = `
+		SELECT * FROM sqlite_master WHERE name='users' and type='table';
+	`
 	createUsersTableQuery = `
 		CREATE TABLE users (
 			id           INTEGER PRIMARY KEY AUTOINCREMENT,
