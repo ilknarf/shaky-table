@@ -1,13 +1,14 @@
 package userdb
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
 	"github.com/pkg/errors"
 )
 
-func (userDB *UserDB) CreateUser(username string, password string, email string) error {
+func (userDB *UserDB) CreateUser(ctx context.Context, username string, password string, email string) error {
 	pwHash, err := hashPassword(password)
 	if err != nil {
 		return errors.Wrap(err, "Unable to CreateUser due to failed password hashing")
@@ -18,7 +19,7 @@ func (userDB *UserDB) CreateUser(username string, password string, email string)
 		Valid:  email != "",
 	}
 
-	if _, err := userDB.db.Exec(createUserQuery, username, emailString, pwHash); err != nil {
+	if _, err := userDB.db.ExecContext(ctx, createUserQuery, username, emailString, pwHash); err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Unable to CreateUser with user: %s", username))
 	}
 

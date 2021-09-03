@@ -12,6 +12,7 @@ func (api *API) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
 	username := r.Form.Get("user")
 	email := r.Form.Get("email")
 	password := r.Form.Get("password")
@@ -21,7 +22,7 @@ func (api *API) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := api.userDB.CreateUser(username, password, email); err != nil {
+	if err := api.userDB.CreateUser(ctx, username, password, email); err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
