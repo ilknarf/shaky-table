@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/ilknarf/shaky-table/api"
 	"github.com/ilknarf/shaky-table/userdb"
 )
@@ -20,14 +19,10 @@ func main() {
 	}
 	defer userDB.Close()
 
-	log.Println("Initializing router")
-	baseRouter := mux.NewRouter()
-
-	// add apiRouter to baseRouter
-	log.Println("Adding API routes to router")
+	log.Println("Initializing API router")
 	apiRouter := api.NewRouter(userDB)
-	baseRouter.PathPrefix("/api").Name("api").Subrouter().Handle("/", apiRouter)
+	http.Handle("/api", apiRouter)
 
 	log.Println("Serving...")
-	log.Fatal(http.ListenAndServeTLS(":8080", "ssl/host.crt", "ssl/host.key", baseRouter))
+	log.Fatal(http.ListenAndServeTLS(":8080", "ssl/host.crt", "ssl/host.key", nil))
 }

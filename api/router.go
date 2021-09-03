@@ -14,7 +14,8 @@ type APIRouter struct {
 }
 
 func (r *APIRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	ctx, _ := context.WithTimeout(req.Context(), 500*time.Millisecond)
+	ctx, cancel := context.WithTimeout(req.Context(), 500*time.Millisecond)
+	defer cancel()
 	r.router.ServeHTTP(w, req.WithContext(ctx))
 }
 
@@ -29,8 +30,9 @@ func NewRouter(userDB *userdb.UserDB) http.Handler {
 }
 
 func (r *APIRouter) registerHandlers(api *API) {
-	post := r.router.Methods("POST")
-	// get := r.router.Methods("GET")
+	subRouter := r.router.PathPrefix("/api").Subrouter()
+	post := subRouter.Methods("POST").Subrouter()
+	// get := subRouter.Methods("GET")
 
-	post.HandlerFunc(api.CreateAccount)
+	post.HandleFunc("/create_account", api.CreateAccount)
 }
