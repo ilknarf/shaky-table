@@ -19,20 +19,20 @@ func (r *APIRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.router.ServeHTTP(w, req.WithContext(ctx))
 }
 
-// NewRouter creates the API struct that contains all the handler methods
-func NewRouter(userDB *userdb.UserDB) http.Handler {
+// AddAPIRoutes creates the API struct that contains all the handler methods,
+// and adds the handlers to the router
+func AddAPIRoutes(userDB *userdb.UserDB, router *mux.Router) http.Handler {
 	api := newAPI(userDB)
 
-	r := &APIRouter{mux.NewRouter()}
+	r := &APIRouter{router}
 	r.registerHandlers(api)
 
 	return r
 }
 
 func (r *APIRouter) registerHandlers(api *API) {
-	subRouter := r.router.PathPrefix("/api").Subrouter()
-	post := subRouter.Methods("POST").Subrouter()
-	// get := subRouter.Methods("GET")
+	post := r.router.Methods("POST").Subrouter()
+	// get := r.router.Methods("GET")
 
 	post.HandleFunc("/create_account", api.CreateAccount)
 }
