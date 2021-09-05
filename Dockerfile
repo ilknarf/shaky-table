@@ -1,3 +1,4 @@
+# multi-stage build for server application
 FROM golang:alpine
 RUN apk add --no-cache --update gcc musl-dev
 WORKDIR /build
