@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -8,45 +9,53 @@ import (
 )
 
 func (api *API) CreateAccount(w http.ResponseWriter, r *http.Request) {
-	if err, responseCode := validPOST(r); err != nil {
-		log.Println(errors.Wrap(err, "CreateAccount error"))
-		w.WriteHeader(responseCode)
-		return
-	}
-
 	ctx := r.Context()
 	username := r.Form.Get("user")
 	email := r.Form.Get("email")
 	password := r.Form.Get("password")
 
-	if username == "" || password == "" {
-		log.Println(errors.New("CreateAccount Error: missing signup form input"))
-		w.WriteHeader(http.StatusBadRequest)
-		w.Header().Set("Content-Type", "application/json")
+	var (
+		responseCode int
+		response     []byte
+	)
 
-		errorType := "bad input"
+	w.Header().Set("Content-Type", "application/json")
+
+	// invalid request body/formatting
+	if err, respCode := validPOST(r); err != nil {
+		log.Println(errors.Wrap(err, "CreateAccount error: incorrect body type"))
+		responseCode = respCode
+
+		errorMessage := "invalid request type"
+		response = newCreateAccountResponse(true, &errorMessage)
+		// missing user/pass field
+	} else if username == "" || password == "" {
+		log.Println(errors.New("CreateAccount: missing signup form input on attempt"))
+		responseCode = http.StatusBadRequest
+
 		errorMessage := "Missing form inputs for signup. Please try again with all required fields"
-		errorResponse, err := newErrorResponse(errorType, &errorMessage)
-		if err != nil {
-			log.Println(errors.Wrap(err, "Unable to create errorResponse"))
-			return
-		}
+		response = newCreateAccountResponse(true, &errorMessage)
+	} else if api.userDB.UserExists(ctx, username) {
+		log.Println("CreateAccount duplicate username signup attempted")
+		responseCode = http.StatusConflict
 
-		w.Write(errorResponse)
+		errorMessage := "user already exists"
+		response = newCreateAccountResponse(true, &errorMessage)
 
-		return
-	}
-
-	if api.userDB.UserExists(ctx, username) {
-		w.WriteHeader(http.StatusConflict)
-		return
-	}
-
-	if err := api.userDB.CreateUser(ctx, username, password, email); err != nil {
+	} else if err := api.userDB.CreateUser(ctx, username, password, email); err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		responseCode = http.StatusInternalServerError
+
+		errorMessage := "unable to create new user"
+		response = newCreateAccountResponse(true, &errorMessage)
+	} else {
+		// success
+		log.Println(fmt.Sprintf("CreateAccount new username %s", username))
+
+		responseCode = http.StatusOK
+		response = newCreateAccountResponse(false, nil)
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(responseCode)
+	w.Write(response)
 }

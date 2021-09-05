@@ -1,15 +1,33 @@
 <script lang="ts">
+    import { createAccount } from "$lib/api";
     let message = "";
+    let alert = false;
 
-    const handleSubmit = (e: Event) => {
+    const handleSubmit = async (e: Event) => {
         e.preventDefault();
         const form = e.currentTarget as HTMLFormElement;
-        const user = form.elements.namedItem("username") as HTMLInputElement;
-        message = user.value;
+        const data = new FormData(form);
+
+        message = "loading...";
+
+        try {
+            const response = await createAccount(data);
+            const body = await response.json()
+
+            if (!response.ok) {
+                alert = true;
+                message = body["message"] ?? "Error!";
+            } else {
+                window.location.href = "/login";
+            }
+        } catch(e) {
+            alert = true;
+            message = "Error!";
+        }
     }
 </script>
 
-<h1>Welcome to SvelteKit</h1>
+<h1>Shaky Table</h1>
 <form on:submit={handleSubmit}>
     <span>
         <label for="username">Username:</label>
@@ -20,7 +38,7 @@
         <input id="password" type="password">
     </span>
     <input id="submit" type="submit" value="Create Account" />
-    <p>{message}</p>
+    <p class={alert? "alert" : null}>{message}</p>
 </form>
 
 <style>
@@ -31,7 +49,7 @@
     input {
         max-width: 10em;
     }
-    p {
+    p.alert {
         color: red;
     }
 </style>

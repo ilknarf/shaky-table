@@ -4,3 +4,4 @@
 ssl/
 db/
 *.db
+caddy/

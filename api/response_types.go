@@ -4,16 +4,22 @@ import (
 	"encoding/json"
 )
 
-type ErrorResponse struct {
-	Error   string  `json:"error"`
+type CreateAccountResponse struct {
+	Success bool    `json:"success"`
 	Message *string `json:"message,omitempty"`
 }
 
-func newErrorResponse(errorType string, errorMessage *string) ([]byte, error) {
-	errorResponse := &ErrorResponse{
-		Error:   errorType,
-		Message: errorMessage,
+func newCreateAccountResponse(isError bool, message *string) []byte {
+	response := &CreateAccountResponse{
+		Success: true,
 	}
 
-	return json.Marshal(errorResponse)
+	if isError {
+		response.Success = false
+		response.Message = message
+	}
+
+	resp, _ := json.Marshal(response)
+
+	return resp
 }
