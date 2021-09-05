@@ -6,7 +6,9 @@
     const handleSubmit = async (e: Event) => {
         e.preventDefault();
         const form = e.currentTarget as HTMLFormElement;
-        const data = new FormData(form);
+        // see https://github.com/microsoft/TypeScript/issues/30584
+        // FormData might contain File, so any-coercing is needed :(
+        const data = new URLSearchParams(new FormData(form) as any);
 
         message = "loading...";
 
