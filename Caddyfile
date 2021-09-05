@@ -1,0 +1,4 @@
+localhost
+
+reverse_proxy /api/* server:8080
+reverse_proxy * client:3000

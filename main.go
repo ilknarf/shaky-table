@@ -34,7 +34,7 @@ func main() {
 
 	log.Println("Initializing router")
 	baseRouter := mux.NewRouter()
-	api.AddAPIRoutes(userDB, baseRouter)
+	api.AddAPIRoutes(userDB, baseRouter.PathPrefix("/api/").Subrouter())
 
 	handler := getCorsHandler(baseRouter, corsAllowed)
 

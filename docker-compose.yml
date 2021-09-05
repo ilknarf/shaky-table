@@ -6,4 +6,16 @@ services:
       - 80:80
       - 443:443
     volumes:
-      - caddy:/data
+      - caddy_data:/data
+      - $PWD/Caddyfile:/etc/caddy/Caddyfile
+  server:
+    build: .
+    image: quaint/server
+    volumes:
+      - ./db:/app/db
+  client:
+    build: ./client
+    image: quaint/client
+
+volumes:
+  caddy_data:

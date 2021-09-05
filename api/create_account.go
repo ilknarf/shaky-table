@@ -10,7 +10,7 @@ import (
 
 func (api *API) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	username := r.Form.Get("user")
+	username := r.Form.Get("username")
 	email := r.Form.Get("email")
 	password := r.Form.Get("password")
 
