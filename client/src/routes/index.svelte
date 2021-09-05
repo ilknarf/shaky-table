@@ -31,11 +31,11 @@
 <form on:submit={handleSubmit}>
     <span>
         <label for="username">Username:</label>
-        <input id="username" type="text">
+        <input name="username" type="text">
     </span>
     <span>
         <label for="password">Password:</label>
-        <input id="password" type="password">
+        <input name="password" type="password">
     </span>
     <input id="submit" type="submit" value="Create Account" />
     <p class={alert? "alert" : null}>{message}</p>

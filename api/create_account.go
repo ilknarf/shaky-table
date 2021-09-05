@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -33,7 +34,16 @@ func (api *API) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		log.Println(errors.New("CreateAccount: missing signup form input on attempt"))
 		responseCode = http.StatusBadRequest
 
-		errorMessage := "Missing form inputs for signup. Please try again with all required fields"
+		missing := make([]string, 0)
+		if username == "" {
+			missing = append(missing, "username")
+		}
+
+		if password == "" {
+			missing = append(missing, "password")
+		}
+
+		errorMessage := "Missing (" + strings.Join(missing, ", ") + ") for signup. Please try again with all required fields"
 		response = newCreateAccountResponse(true, &errorMessage)
 	} else if api.userDB.UserExists(ctx, username) {
 		log.Println("CreateAccount duplicate username signup attempted")
