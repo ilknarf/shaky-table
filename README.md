@@ -20,5 +20,5 @@ Roadmap:
 - [ ] client-side rendering of spreadsheet data
 - [ ] build webpage UX out
 - [ ] parameterize build and containerization options
-- [ ] additional MongoDB optimizations
+- [ ] additional MongoDB optimizations (Change Streams)
 - [ ] (maybe) deploy for demo use
