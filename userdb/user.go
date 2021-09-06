@@ -40,8 +40,9 @@ func (userDB *UserDB) CreateUser(ctx context.Context, username string, password 
 	return nil
 }
 
-// GetUserByUsername gets a user by username, returning an error if not found. `username` should be lowercase string.
+// GetUserByUsername gets a user by username, returning an error if not found.
 func (userDB *UserDB) GetUserByUsername(ctx context.Context, username string) (*User, error) {
+	username = strings.ToLower(username)
 	user := &User{}
 	if err := userDB.db.QueryRowContext(ctx, getUserByUsernameQuery, username).Scan(&user.Username, &user.DisplayName, &user.Email, &user.LastLogin, &user.CreatedAt); err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Unable to GetUserByUsername with username %s", username))
@@ -50,8 +51,15 @@ func (userDB *UserDB) GetUserByUsername(ctx context.Context, username string) (*
 	return user, nil
 }
 
-func (userDB *UserDB) UserExists(ctx context.Context, username string) bool {
+func (userDB *UserDB) UserExists(ctx context.Context, username string) (bool, error) {
 	username = strings.ToLower(username)
-	_, err := userDB.GetUserByUsername(ctx, username)
-	return err != nil
+	row := userDB.db.QueryRowContext(ctx, checkUserExistsByUsernameQuery, username)
+
+	var existsBit int
+
+	if err := row.Scan(&existsBit); err != nil {
+		return false, err
+	}
+
+	return existsBit == 1, nil
 }
