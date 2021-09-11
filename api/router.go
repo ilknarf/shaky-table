@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/ilknarf/shaky-table/auth"
 	"github.com/ilknarf/shaky-table/userdb"
 )
 
@@ -16,13 +17,13 @@ type APIRouter struct {
 func (r *APIRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	ctx, cancel := context.WithTimeout(req.Context(), 500*time.Millisecond)
 	defer cancel()
-	r.router.ServeHTTP(w, req.WithContext(ctx))
+	r.router.ServeHTTP(w, req.Clone(ctx))
 }
 
 // AddAPIRoutes creates the API struct that contains all the handler methods,
 // and adds the handlers to the router
-func AddAPIRoutes(userDB *userdb.UserDB, router *mux.Router) http.Handler {
-	api := newAPI(userDB)
+func AddAPIRoutes(userDB *userdb.UserDB, auth *auth.Auth, router *mux.Router) http.Handler {
+	api := newAPI(userDB, auth)
 
 	r := &APIRouter{router}
 	r.registerHandlers(api)

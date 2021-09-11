@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/ilknarf/shaky-table/api"
+	"github.com/ilknarf/shaky-table/auth"
 	"github.com/ilknarf/shaky-table/userdb"
 	"github.com/rs/cors"
 )
@@ -24,7 +25,7 @@ func init() {
 func main() {
 	log.Println("Starting...")
 
-	log.Println("Connecting to UserDB")
+	log.Println("Connecting to UserDB...")
 	userDB, err := userdb.Open()
 
 	if err != nil {
@@ -32,9 +33,15 @@ func main() {
 	}
 	defer userDB.Close()
 
+	log.Println("Setting up authentication...")
+	authentication, err := auth.New()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	log.Println("Initializing router")
 	baseRouter := mux.NewRouter()
-	api.AddAPIRoutes(userDB, baseRouter.PathPrefix("/api/").Subrouter())
+	api.AddAPIRoutes(userDB, authentication, baseRouter.PathPrefix("/api/").Subrouter())
 
 	handler := getCorsHandler(baseRouter, corsAllowed)
 

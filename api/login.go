@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (api *API) CreateAccount(w http.ResponseWriter, r *http.Request) {
+func (api *API) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var (
@@ -26,7 +26,7 @@ func (api *API) CreateAccount(w http.ResponseWriter, r *http.Request) {
 
 	// invalid request body/formatting
 	if err, respCode := validPOST(r); err != nil {
-		log.Println(errors.Wrap(err, "CreateAccount incorrect body type"))
+		log.Println(errors.Wrap(err, "Login incorrect body type"))
 		setErrorResponse(respCode, "invalid request type")
 
 		w.WriteHeader(responseCode)
@@ -35,7 +35,7 @@ func (api *API) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := r.ParseForm(); err != nil {
-		log.Println(errors.Wrap(err, "CreateAccount unable to parse form data"))
+		log.Println(errors.Wrap(err, "Login unable to parse form data"))
 		setErrorResponse(http.StatusBadRequest, "unable to parse form data")
 
 		w.WriteHeader(responseCode)
@@ -44,11 +44,10 @@ func (api *API) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	username := r.Form.Get("username")
-	email := r.Form.Get("email")
 	password := r.Form.Get("password")
 
 	if username == "" || password == "" {
-		log.Println(errors.New("CreateAccount missing signup form input on attempt"))
+		log.Println(errors.New("Login missing signup form input on attempt"))
 
 		missing := make([]string, 0)
 		if username == "" {
@@ -59,24 +58,13 @@ func (api *API) CreateAccount(w http.ResponseWriter, r *http.Request) {
 			missing = append(missing, "password")
 		}
 
-		errorMessage := "Missing (" + strings.Join(missing, ", ") + ") for signup. Please try again with all required fields"
+		errorMessage := "Missing (" + strings.Join(missing, ", ") + ") for login. Please try again with all required fields"
 		setErrorResponse(http.StatusBadRequest, errorMessage)
 	} else if exists, err := api.userDB.UserExists(ctx, username); exists || err != nil {
-		// check if user exists or is db read error
-		if exists {
-			log.Println("CreateAccount duplicate username signup attempted")
-			setErrorResponse(http.StatusConflict, "user already exists")
-		} else {
-			log.Println(errors.Wrap(err, "CreateAccount unable to check if user exists"))
-			setErrorResponse(http.StatusInternalServerError, "server was unable to handle the request")
-		}
-	} else if err := api.userDB.CreateUser(ctx, username, password, email); err != nil {
-		// handle error if user unable to be created
-		log.Println(errors.Wrap(err, "CreateAccount unable to create user"))
-		setErrorResponse(http.StatusInternalServerError, "unable to create new user")
+
 	} else {
 		// success
-		log.Println(fmt.Sprintf("CreateAccount new username %s", username))
+		log.Println(fmt.Sprintf("CreateAccount new username: %s", username))
 
 		responseCode = http.StatusOK
 		response = newResponse(false, nil)

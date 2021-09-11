@@ -10,12 +10,14 @@ services:
       - $PWD/Caddyfile:/etc/caddy/Caddyfile
   server:
     build: .
+    restart: unless-stopped
     image: quaint/server
     volumes:
       - ./db:/app/db
   client:
     build: ./client
     image: quaint/client
+    restart: unless-stopped
 
 volumes:
   caddy_data:

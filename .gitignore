@@ -5,3 +5,5 @@ ssl/
 db/
 *.db
 caddy/
+cookie.auth.key
+cookie.encryption.key

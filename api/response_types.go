@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 )
 
-type CreateAccountResponse struct {
+type Response struct {
 	Success bool    `json:"success"`
 	Message *string `json:"message,omitempty"`
 }
 
-func newCreateAccountResponse(isError bool, message *string) []byte {
-	response := &CreateAccountResponse{
+func newResponse(isError bool, message *string) []byte {
+	response := &Response{
 		Success: true,
 	}
 
