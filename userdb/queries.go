@@ -11,6 +11,7 @@ const (
 			display_name VARCHAR(32) NOT NULL,
 			email        VARCHAR(255),
 			pw_hash      VARCHAR(64) NOT NULL,
+			is_admin     INTEGER NOT NULL,
 			last_login   INTEGER NOT NULL,
 			created_at   INTEGER NOT NULL
 		);
@@ -20,13 +21,18 @@ const (
 		CREATE UNIQUE INDEX ix_users_email ON users (email);
 	`
 	getUserByUsernameQuery = `
-		SELECT (username, display_name, email, last_login, created_at) FROM users WHERE username = ?;
+		SELECT (username, display_name, email, is_admin, last_login, created_at) FROM users WHERE username = ?;
 	`
 	createUserQuery = `
-		INSERT INTO users (username, display_name, email, pw_hash, created_at, last_login) 
-		VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+		INSERT INTO users (username, display_name, email, pw_hash, is_admin, created_at, last_login) 
+		VALUES (?, ?, ?, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 	`
 	checkUserExistsByUsernameQuery = `
-			SELECT EXISTS (SELECT DISTINCT 1 FROM users WHERE username = ?);
+		SELECT EXISTS (SELECT DISTINCT 1 FROM users WHERE username = ?);
+	`
+
+	getUserAndVerifyLogin = `
+		SELECT (username, display_name, email, is_admin, last_login, created_at) FROM users 
+		WHERE username = ? AND pw_hash = ?;
 	`
 )

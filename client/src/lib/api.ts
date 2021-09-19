@@ -1,4 +1,4 @@
-const API_ROOT = "https://localhost/api";
+const API_ROOT = "https://localhost/api/v1";
 
 export const createAccount = async (data: URLSearchParams): Promise<Response> => (
     fetch(`${API_ROOT}/create_account`, {

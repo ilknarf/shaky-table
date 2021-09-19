@@ -26,9 +26,9 @@ type Auth struct {
 }
 
 type User struct {
-	username string
-	isAdmin  bool
-	loggedIn bool
+	Username string
+	IsAdmin  bool
+	LoggedIn bool
 }
 
 func readOrGenerateKey(filename string, size int) ([]byte, error) {
@@ -68,7 +68,7 @@ func (auth *Auth) WithAuthentication(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		if !u.loggedIn {
+		if !u.LoggedIn {
 			log.Println(errors.Wrap(err, "withAuthentication user not logged in:"))
 			redirectAuthFailed(w, r)
 			return
@@ -84,9 +84,9 @@ func (auth *Auth) AddUserToSession(w http.ResponseWriter, r *http.Request, user 
 		return err
 	}
 
-	s.Values["username"] = user.username
-	s.Values["loggedIn"] = user.loggedIn
-	s.Values["isAdmin"] = user.isAdmin
+	s.Values["username"] = user.Username
+	s.Values["loggedIn"] = user.LoggedIn
+	s.Values["isAdmin"] = user.IsAdmin
 
 	s.Save(r, w)
 
@@ -108,21 +108,21 @@ func (auth *Auth) GetUser(r *http.Request) (*User, error) {
 	if !ok {
 		return nil, UsernameNotFoundError
 	}
-	u.username = username
+	u.Username = username
 
 	isAdmin, ok := s.Values["isAdmin"].(bool)
 	if !ok {
 		return nil, IsAdminNotFoundError
 	}
 
-	u.isAdmin = isAdmin
+	u.IsAdmin = isAdmin
 
 	loggedIn, ok := s.Values["loggedIn"].(bool)
 	if !ok {
 		return nil, LoggedInNotFoundError
 	}
 
-	u.loggedIn = loggedIn
+	u.LoggedIn = loggedIn
 
 	return u, nil
 }

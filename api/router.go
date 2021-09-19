@@ -32,8 +32,9 @@ func AddAPIRoutes(userDB *userdb.UserDB, auth *auth.Auth, router *mux.Router) ht
 }
 
 func (r *APIRouter) registerHandlers(api *API) {
-	post := r.router.Methods("POST").Subrouter()
+	postV1 := r.router.Methods("POST").PathPrefix("/v1/").Subrouter()
 	// get := r.router.Methods("GET")
 
-	post.HandleFunc("/create_account", api.CreateAccount)
+	postV1.HandleFunc("/create_account", api.CreateAccount)
+	postV1.HandleFunc("/login", api.LoginUser)
 }
