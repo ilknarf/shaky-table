@@ -4,14 +4,22 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
+	"github.com/pkg/errors"
 )
 
-const cookieAuthKeyPath = "./cookie.auth.key"
-const cookieEncryptionKeyPath = "./cookie.encryption.key"
+const (
+	cookieAuthKeyPath       = "./cookie.auth.key"
+	cookieEncryptionKeyPath = "./cookie.encryption.key"
+)
+
+var (
+	UsernameNotFoundError = errors.New("username not found on session")
+	LoggedInNotFoundError = errors.New("loggedIn not found on session")
+	IsAdminNotFoundError  = errors.New("isAdmin not found on session")
+)
 
 type Auth struct {
 	store *sessions.CookieStore
@@ -21,7 +29,6 @@ type User struct {
 	username string
 	isAdmin  bool
 	loggedIn bool
-	expires  time.Time
 }
 
 func readOrGenerateKey(filename string, size int) ([]byte, error) {
@@ -51,37 +58,73 @@ func New() (*Auth, error) {
 	return &Auth{sessions.NewCookieStore(authKey, encryptionKey)}, nil
 }
 
-func (auth *Auth) withAuthentication(next http.HandlerFunc) http.HandlerFunc {
+// WithAuthentication is middleware that returns an http.HandlerFunc wrapped by auth validatioon
+func (auth *Auth) WithAuthentication(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s, err := auth.store.Get(r, "login-data")
+		u, err := auth.GetUser(r)
 		if err != nil {
-			log.Println("withAuthentication unable to decode session")
+			log.Println(errors.Wrap(err, "withAuthentication unable to authenticate:"))
 			redirectAuthFailed(w, r)
 			return
 		}
 
-		isLoggedInNoType, ok := s.Values["loggedIn"]
-		if !ok {
-			log.Println("withAuthentication loggedIn not found on session")
-			redirectAuthFailed(w, r)
-			return
-		}
-
-		isLoggedIn, ok := isLoggedInNoType.(bool)
-		if !ok {
-			log.Println("withAuthentication loggedIn unable to convert to bool")
-			redirectAuthFailed(w, r)
-			return
-		}
-
-		if !isLoggedIn {
-			log.Println("withAuthentication loggedIn false")
+		if !u.loggedIn {
+			log.Println(errors.Wrap(err, "withAuthentication user not logged in:"))
 			redirectAuthFailed(w, r)
 			return
 		}
 
 		next(w, r)
 	}
+}
+
+func (auth *Auth) AddUserToSession(w http.ResponseWriter, r *http.Request, user User) error {
+	s, err := auth.store.Get(r, "login-data")
+	if err != nil {
+		return err
+	}
+
+	s.Values["username"] = user.username
+	s.Values["loggedIn"] = user.loggedIn
+	s.Values["isAdmin"] = user.isAdmin
+
+	s.Save(r, w)
+
+	return nil
+}
+
+func (auth *Auth) GetUser(r *http.Request) (*User, error) {
+	s, err := auth.store.Get(r, "login-data")
+	if err != nil {
+		return nil, err
+	}
+
+	u := &User{}
+	if err != nil {
+		return nil, err
+	}
+
+	username, ok := s.Values["username"].(string)
+	if !ok {
+		return nil, UsernameNotFoundError
+	}
+	u.username = username
+
+	isAdmin, ok := s.Values["isAdmin"].(bool)
+	if !ok {
+		return nil, IsAdminNotFoundError
+	}
+
+	u.isAdmin = isAdmin
+
+	loggedIn, ok := s.Values["loggedIn"].(bool)
+	if !ok {
+		return nil, LoggedInNotFoundError
+	}
+
+	u.loggedIn = loggedIn
+
+	return u, nil
 }
 
 func redirectAuthFailed(w http.ResponseWriter, r *http.Request) {
