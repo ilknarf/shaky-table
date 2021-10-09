@@ -1,5 +1,6 @@
 <script lang="ts">
     import { createAccount } from "$lib/api";
+    
     let message = "";
     let alert = false;
 
@@ -7,8 +8,8 @@
         e.preventDefault();
         const form = e.currentTarget as HTMLFormElement;
         // see https://github.com/microsoft/TypeScript/issues/30584
-        // FormData might contain File, so any-coercing is needed :(
-        const data = new URLSearchParams(new FormData(form) as any);
+        // FormData might contain File, so coercing is needed :(
+        const data = new URLSearchParams(new FormData(form) as URLSearchParams);
 
         message = "loading...";
 

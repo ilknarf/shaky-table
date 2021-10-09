@@ -33,8 +33,10 @@ func (userDB *UserDB) CreateUser(ctx context.Context, username string, password 
 	// display_name can be changed, username can't
 	displayName := username
 	username = strings.ToLower(username)
+	// hardcoded for now
+	isAdminInt := 0
 
-	if _, err := userDB.db.ExecContext(ctx, createUserQuery, username, displayName, emailString, pwHash); err != nil {
+	if _, err := userDB.db.ExecContext(ctx, createUserQuery, username, displayName, emailString, pwHash, isAdminInt); err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Unable to create user with user: %s", username))
 	}
 

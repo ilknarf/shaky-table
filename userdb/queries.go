@@ -25,7 +25,7 @@ const (
 	`
 	createUserQuery = `
 		INSERT INTO users (username, display_name, email, pw_hash, is_admin, created_at, last_login) 
-		VALUES (?, ?, ?, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+		VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 	`
 	checkUserExistsByUsernameQuery = `
 		SELECT EXISTS (SELECT DISTINCT 1 FROM users WHERE username = ?);

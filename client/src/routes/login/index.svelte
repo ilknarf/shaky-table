@@ -1,11 +1,12 @@
 <script lang="ts">
+    import { loginUser } from "$lib/api";
     let message = "";
 
-    const handleSubmit = (e: Event) => {
+    const handleSubmit = async (e: Event) => {
         e.preventDefault();
         const form = e.currentTarget as HTMLFormElement;
-        const user = form.elements.namedItem("username") as HTMLInputElement;
-        message = user.value;
+
+        await loginUser(new FormData(form) as URLSearchParams);
     }
 </script>
 
